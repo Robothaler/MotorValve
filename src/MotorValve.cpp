@@ -4,7 +4,7 @@
 Features: 
 
 * offers an easy way to open, close and halfopen a motorized valve or even just type in your required angle
-* you can use this library for bellimo gearmotors oder motorized valves with no angle sensor, the library keeps track of the angle
+* you can use this library for belimo gearmotors oder motorized valves with no angle sensor, the library keeps track of the angle
 * set start and max angle and the time from start angle to max angle for caluclations
 * you can also see the status of the valves (open, closed, halfOpen, isCalibrating, isOperating)
 * you can easily start calibration to ensure position, best is to do daily calibration
