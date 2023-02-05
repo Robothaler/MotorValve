@@ -1,4 +1,4 @@
-### MotoValve
+### MotorValve
 A simple library for Arduino to handle motorized valves for home-pools. 
 
 Version 1.0.0
