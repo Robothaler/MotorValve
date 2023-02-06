@@ -193,3 +193,27 @@ boolean MotorValve::isCalibrating()
 {
     return calibrating;
 }
+
+const char* MotorValve::getStatus() {
+    if (calibrating) {
+        return "calibrating";
+    }
+
+    if (operating) {
+        return "operating";
+    }
+
+    if (currentAngle == startAngle) {
+        return "open";
+    }
+
+    if (currentAngle == (startAngle + (maxAngle - startAngle) / 2)) {
+        return "halfOpen";
+    }
+
+    if (currentAngle == maxAngle) {
+        return "closed";
+    }
+
+    return String(currentAngle).c_str();
+}

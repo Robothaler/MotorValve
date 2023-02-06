@@ -58,6 +58,7 @@ public:
     boolean CurrentAngle();
     boolean isOperating();
     boolean isCalibrating();
+    const char* getStatus();
 
 private:
     // Pin numbers for opening and closing the valve
