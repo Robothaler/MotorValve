@@ -10,6 +10,7 @@ Features:
 * you can easily start calibration to ensure position, best is to do daily calibration
 * You can use this library with standard Pins and different PCF8574-Pins
 
+NB: all timings are in milliseconds
 */
 
 #ifndef MOTOR_VALVE_H
@@ -51,14 +52,18 @@ public:
 
     void setTargetAngle(int target);
 
+    int getCurrentAngle();
+
     // Functions to check the status of the valve
     boolean isOpen();
     boolean isClosed();
     boolean isHalfOpen();
     boolean CurrentAngle();
+    boolean isOpening();
+    boolean isClosing();
     boolean isOperating();
     boolean isCalibrating();
-    const char* getStatus();
+    std::string getStatus();
 
 private:
     // Pin numbers for opening and closing the valve
@@ -90,6 +95,8 @@ private:
     // Variables to keep track of calibration and operation status
     boolean calibrating;
     boolean operating;
+    boolean opening;
+    boolean closing;
 
     // Timestamps for calibration and operation start time
     unsigned long calibrationStartTime;
