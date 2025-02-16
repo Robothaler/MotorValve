@@ -3,9 +3,9 @@
                  (c) Robothaler <robothaler@web.de> 2023
 Features: 
 
-* offers an easy way to open, close and halfopen a motorized valve or even just type in your required angle
-* you can use this library for belimo gearmotors oder motorized valves with no angle sensor, the library keeps track of the angle
-* set start and max angle and the time from start angle to max angle for caluclations
+* offers an easy way to open, close and half-open a motorized valve or even just type in your required angle
+* you can use this library for Belimo gearmotors or motorized valves with no angle sensor, the library keeps track of the angle
+* set start and max angle and the time from start angle to max angle for calculations
 * you can also see the status of the valves (open, closed, halfOpen, isCalibrating, isOperating)
 * you can easily start calibration to ensure position, best is to do daily calibration
 * You can use this library with standard Pins and different PCF8574-Pins
@@ -24,31 +24,31 @@ Features:
 //CalibrationDirection can be set to CLOCKWISE or COUNTER_CLOCKWISE, some valves need to have calibration in CCW Direction
 //"open", "close" and "halfopen" comands set the valve to the corresponding valve position
 //"TargetAngle" is for setting a specific position
-MotorValve::MotorValve(uint8_t OpenPin, uint8_t ClosePin, int StartAngle, int MaxAngle, int TimeToMaxAngle, int CalibrationDirection, int PcfTyp, char* Name) {
+MotorValve::MotorValve(uint8_t OpenPin, uint8_t ClosePin, int StartAngle, int MaxAngle, int TimeToMaxAngle, int CalibrationDirection, uint8_t PcfTyp, const char* Name) {
     this->openPin = OpenPin;
     this->closePin = ClosePin;
     this->startAngle = StartAngle;
     this->maxAngle = MaxAngle;
-    this->timeToMaxAngle = TimeToMaxAngle; //in seconds
-    this->calibrationDirection = CalibrationDirection; //CLOCKWISE or COUNTER_CLOCKWISE
-    this->pcftyp = PcfTyp; //NO_PCF = 0 / PCF8574 = 1 / PCF8574_3 = 2 / PCF8574_4 = 3
+    this->halfAngle = startAngle + (maxAngle - startAngle) / 2;
+    this->timeToMaxAngle = TimeToMaxAngle; // in seconds
+    this->calibrationDirection = CalibrationDirection; // CLOCKWISE or COUNTER_CLOCKWISE
+    this->pcftyp = PcfTyp; // NO_PCF = 0 / PCF8574 = 1 / PCF8574_3 = 2 / PCF8574_4 = 3
     this->instanceName = Name;
-
 }
 
 void MotorValve::open() {
     if (currentAngle != startAngle) {
         targetAngle = startAngle;
-        Debug.print(DBG_DEBUG,"[MotorValve] %s TargetAngle set to: %d", instanceName, targetAngle);
-        Debug.print(DBG_DEBUG,"[MotorValve] %s CurrentAngle is: %d", instanceName, currentAngle);
+        Debug.print(DBG_DEBUG, "[MotorValve] %s TargetAngle set to: %d", instanceName, targetAngle);
+        Debug.print(DBG_DEBUG, "[MotorValve] %s CurrentAngle is: %d", instanceName, currentAngle);
     }
 }
 
 void MotorValve::close() {
     if (currentAngle != maxAngle) {
         targetAngle = maxAngle;
-        Debug.print(DBG_DEBUG,"[MotorValve] %s TargetAngle set to: %d", instanceName, targetAngle);
-        Debug.print(DBG_DEBUG,"[MotorValve] %s CurrentAngle is: %d", instanceName, currentAngle);
+        Debug.print(DBG_DEBUG, "[MotorValve] %s TargetAngle set to: %d", instanceName, targetAngle);
+        Debug.print(DBG_DEBUG, "[MotorValve] %s CurrentAngle is: %d", instanceName, currentAngle);
     }
 }
 
@@ -56,8 +56,8 @@ void MotorValve::halfOpen() {
     int halfAngle = startAngle + (maxAngle - startAngle) / 2;
     if (currentAngle != halfAngle) {
         targetAngle = halfAngle;
-        Debug.print(DBG_DEBUG,"[MotorValve] %s Target Angle set to HalfOpen (%d).", instanceName, targetAngle);
-        Debug.print(DBG_DEBUG,"[MotorValve] %s CurrentAngle is: %d", instanceName, currentAngle);
+        Debug.print(DBG_DEBUG, "[MotorValve] %s Target Angle set to HalfOpen (%d).", instanceName, targetAngle);
+        Debug.print(DBG_DEBUG, "[MotorValve] %s CurrentAngle is: %d", instanceName, currentAngle);
     }
 }
 
@@ -72,13 +72,12 @@ void MotorValve::setTargetAngle(int target) {
             int halfAngle = startAngle + (maxAngle - startAngle) / 2;
             targetAngle = halfAngle;
         }
-        Debug.print(DBG_DEBUG,"[MotorValve] %s TargetAngle set to: %d", instanceName, targetAngle);
-        Debug.print(DBG_DEBUG,"[MotorValve] %s CurrentAngle is: %d", instanceName, currentAngle);
+        Debug.print(DBG_DEBUG, "[MotorValve] %s TargetAngle set to: %d", instanceName, targetAngle);
+        Debug.print(DBG_DEBUG, "[MotorValve] %s CurrentAngle is: %d", instanceName, currentAngle);
     }
 }
 
-void MotorValve::loop() 
-{
+void MotorValve::loop() {
     int angleDiff = abs(currentAngle - targetAngle);
     int operatingDuration = abs(angleDiff * timeToMaxAngle * 1000 / (maxAngle - startAngle));
 
@@ -87,11 +86,11 @@ void MotorValve::loop()
             if (currentAngle > targetAngle) {
                 setSignal(openPin, ON);
                 opening = true;
-                Debug.print(DBG_DEBUG,"[MotorValve] %s is operating to open.", instanceName);
+                Debug.print(DBG_DEBUG, "[MotorValve] %s is operating to open.", instanceName);
             } else {
                 setSignal(closePin, ON);
                 closing = true;
-                Debug.print(DBG_DEBUG,"[MotorValve] %s is operating to close.", instanceName);
+                Debug.print(DBG_DEBUG, "[MotorValve] %s is operating to close.", instanceName);
             }
 
             operating = true;
@@ -103,13 +102,8 @@ void MotorValve::loop()
         if ((millis() - calibrationStartTime) >= (timeToMaxAngle + 2) * 1000) {
             setSignal(openPin, OFF);
             setSignal(closePin, OFF);
-            Debug.print(DBG_DEBUG,"[MotorValve] %s calibration stopped.", instanceName);
+            Debug.print(DBG_DEBUG, "[MotorValve] %s calibration stopped.", instanceName);
             calibrating = false;
-            /*if(calibrationDirection == CLOCKWISE) {
-                currentAngle = maxAngle;
-            } else {
-                currentAngle = startAngle;
-            }*/
         }
     }
 
@@ -117,17 +111,17 @@ void MotorValve::loop()
         if ((millis() - operationStartTime) >= operatingDuration) {
             setSignal(openPin, OFF);
             setSignal(closePin, OFF);
-            Debug.print(DBG_DEBUG,"[MotorValve] %s operation stopped.", instanceName);
+            Debug.print(DBG_DEBUG, "[MotorValve] %s operation stopped.", instanceName);
             
             opening = false;
             closing = false;
             operating = false;
             currentAngle = targetAngle;
 
-             if (currentAngle == targetAngle) {
+            if (currentAngle == targetAngle) {
                 setSignal(openPin, OFF);
                 setSignal(closePin, OFF);
-                Debug.print(DBG_DEBUG,"[MotorValve] %s is turned off.", instanceName);
+                Debug.print(DBG_DEBUG, "[MotorValve] %s is turned off.", instanceName);
             }
         }
     }
@@ -140,24 +134,24 @@ void MotorValve::calibrate() {
         setSignal(openPin, ON);
         calibrationStartTime = millis();
         calibrating = true;
-        Debug.print(DBG_DEBUG,"[MotorValve] %s is calibrating clockwise.", instanceName);
+        Debug.print(DBG_DEBUG, "[MotorValve] %s is calibrating clockwise.", instanceName);
     } else {
         setSignal(closePin, ON);
         calibrationStartTime = millis();
         calibrating = true;
-        Debug.print(DBG_DEBUG,"[MotorValve] %s is calibrating counter-clockwise.", instanceName);
+        Debug.print(DBG_DEBUG, "[MotorValve] %s is calibrating counter-clockwise.", instanceName);
     }
 }
 
-void MotorValve::setSignal(int pin, int state) {
+void MotorValve::setSignal(uint8_t pin, uint8_t state) {
     if (pcftyp == NO_PCF) {
         digitalWrite(pin, state);
-    } else if (pcftyp == PCF8574_2) {
-        pcf8574.digitalWrite(pin, state);
-    } else if (pcftyp == PCF8574_3) {
-        pcf8574_3.digitalWrite(pin, state);
-    } else if (pcftyp == PCF8574_4) {
-        pcf8574_4.digitalWrite(pin, state);
+    } else if (pcftyp == PCF8574_I) {
+        pcf8574_I.digitalWrite(pin, state);
+    } else if (pcftyp == PCF8574_II) {
+        pcf8574_II.digitalWrite(pin, state);
+    } else if (pcftyp == PCF8574_III) {
+        pcf8574_III.digitalWrite(pin, state);
     }
 }
 
@@ -188,67 +182,65 @@ boolean MotorValve::isHalfOpen()
     return false;
 }
 
-// returns the current angle of the valve
-boolean MotorValve::CurrentAngle() 
-{
-  return currentAngle;
+// returns the start angle of the valve
+bool MotorValve::StartAngle() {
+  return startAngle;
 }
 
-// returns the current angle of the valve
-int MotorValve::getCurrentAngle() 
+// returns the maximum angle of the valve
+boolean MotorValve::HalfAngle()
 {
-  return currentAngle;
+  return halfAngle;
 }
 
-
-// returns true only if it is actually opening
-boolean MotorValve::isOpening() 
+// returns the maximum angle of the valve
+boolean MotorValve::MaxAngle() 
 {
+  return maxAngle;
+}
+
+bool MotorValve::CurrentAngle() {
+    return currentAngle;
+}
+
+int MotorValve::getCurrentAngle() {
+    return currentAngle;
+}
+
+bool MotorValve::isOpening() {
     return opening;
 }
 
-// returns true only if it is actually closing
-boolean MotorValve::isClosing() 
-{
+bool MotorValve::isClosing() {
     return closing;
 }
 
-// returns true only if it is actually operating
-boolean MotorValve::isOperating() 
-{
+bool MotorValve::isOperating() {
     return operating;
 }
 
-// returns true only if it is actually calibrating
-boolean MotorValve::isCalibrating() 
-{
+bool MotorValve::isCalibrating() {
     return calibrating;
 }
 
-std::string MotorValve::getStatus() {
+const char* MotorValve::getStatus() {
+    static char status[20];
+
     if (calibrating) {
-        return u8"calibrating";
+        strcpy(status, "calibrating");
+    } else if (opening) {
+        strcpy(status, "opening");
+    } else if (closing) {
+        strcpy(status, "closing");
+    } else if (currentAngle == startAngle) {
+        strcpy(status, "OPEN");
+    } else if (currentAngle == (startAngle + (maxAngle - startAngle) / 2)) {
+        strcpy(status, "HALFOPEN");
+    } else if (currentAngle == maxAngle) {
+        strcpy(status, "CLOSED");
+    } else {
+        snprintf(status, sizeof(status), "%d°", currentAngle);
     }
 
-    if (opening) {
-        return u8"opening";
-    }
-
-    if (closing) {
-        return u8"closing";
-    }
-
-    if (currentAngle == startAngle) {
-        return u8"OPEN";
-    }
-
-    if (currentAngle == (startAngle + (maxAngle - startAngle) / 2)) {
-        return u8"HALFOPEN";
-    }
-
-    if (currentAngle == maxAngle) {
-        return u8"CLOSED";
-    }
-
-    return std::to_string(currentAngle) + u8"°  ";
+    return status;
 }

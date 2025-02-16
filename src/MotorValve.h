@@ -3,9 +3,9 @@
                  (c) Robothaler <robothaler@web.de> 2023
 Features: 
 
-* offers an easy way to open, close and halfopen a motorized valve or even just type in your required angle
-* you can use this library for belimo gearmotors oder motorized valves with no angle sensor, the library keeps track of the angle
-* set start and max angle and the time from start angle to max angle for caluclations
+* offers an easy way to open, close and half-open a motorized valve or even just type in your required angle
+* you can use this library for Belimo gearmotors or motorized valves with no angle sensor, the library keeps track of the angle
+* set start and max angle and the time from start angle to max angle for calculations
 * you can also see the status of the valves (open, closed, halfOpen, isCalibrating, isOperating)
 * you can easily start calibration to ensure position, best is to do daily calibration
 * You can use this library with standard Pins and different PCF8574-Pins
@@ -16,7 +16,7 @@ NB: all timings are in milliseconds
 #ifndef MOTOR_VALVE_H
 #define MOTOR_VALVE_H
 
-#define MOTOR_VALVE_VERSION "1.0.0"
+#define MOTOR_VALVE_VERSION "1.0.2"
 
 // Constants used in some of the functions below
 #define CLOCKWISE 0
@@ -26,20 +26,21 @@ NB: all timings are in milliseconds
 #define OFF 1
 
 #define NO_PCF 0
-#define PCF8574_2 1
-#define PCF8574_3 2
-#define PCF8574_4 3
+#define PCF8574_I 1
+#define PCF8574_II 2
+#define PCF8574_III 3
 
 #include <Arduino.h>
 
 class MotorValve {
 public:
-    MotorValve(uint8_t openPin, uint8_t closePin, int startAngle, int maxAngle, int timeToMaxAngle, int calibrationDirection, int pcftyp, char* name);
+    // Constructor
+    MotorValve(uint8_t openPin, uint8_t closePin, int startAngle, int maxAngle, int timeToMaxAngle, int calibrationDirection, uint8_t pcftyp, const char* name);
 
-    //Funktion to set the correct pintyp
-    void setSignal(int pin, int state);
+    // Function to set the correct pin type (standard or PCF8574)
+    void setSignal(uint8_t pin, uint8_t state);
     
-    // Functions to open, close and half-open the valve
+    // Functions to open, close, and half-open the valve
     void open();
     void close();
     void halfOpen();
@@ -50,20 +51,27 @@ public:
     // Function to update the status of the valve
     void loop();
 
+    // Function to set a specific target angle
     void setTargetAngle(int target);
 
+    // Function to get the current angle of the valve
     int getCurrentAngle();
 
     // Functions to check the status of the valve
-    boolean isOpen();
-    boolean isClosed();
-    boolean isHalfOpen();
-    boolean CurrentAngle();
-    boolean isOpening();
-    boolean isClosing();
-    boolean isOperating();
-    boolean isCalibrating();
-    std::string getStatus();
+    bool isOpen();
+    bool isClosed();
+    bool isHalfOpen();
+    bool StartAngle();
+    bool HalfAngle();
+    bool MaxAngle();
+    bool CurrentAngle();
+    bool isOpening();
+    bool isClosing();
+    bool isOperating();
+    bool isCalibrating();
+
+    // Function to get the current status as a C-string (char array)
+    const char* getStatus();
 
 private:
     // Pin numbers for opening and closing the valve
@@ -72,31 +80,31 @@ private:
 
     // Starting and maximum angle of the valve
     int startAngle;
+    int halfAngle;
     int maxAngle;
 
-    // Time required to reach the maximum angle
+    // Time required to reach the maximum angle (in seconds)
     int timeToMaxAngle;
 
-    // Direction of calibration
+    // Direction of calibration (CLOCKWISE or COUNTER_CLOCKWISE)
     int calibrationDirection;
     
-    // You have to define on which PCF8574 the Valve is Configured
-    // Make sure that both relais (open and close) are on the same PCF8574
-    int pcftyp;
+    // Type of PCF8574 used (NO_PCF, PCF8574_I, PCF8574_II, PCF8574_III)
+    uint8_t pcftyp;
 
-    // Instancename for easier debuging
-    char* Name;
-    char* instanceName;
+    // Instance name for easier debugging
+    const char* Name;
+    const char* instanceName;
 
     // Current angle and target angle of the valve
     int currentAngle;
     int targetAngle;
 
     // Variables to keep track of calibration and operation status
-    boolean calibrating;
-    boolean operating;
-    boolean opening;
-    boolean closing;
+    bool calibrating;
+    bool operating;
+    bool opening;
+    bool closing;
 
     // Timestamps for calibration and operation start time
     unsigned long calibrationStartTime;
